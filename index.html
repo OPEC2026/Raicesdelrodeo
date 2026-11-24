@@ -459,6 +459,7 @@ footer .foot-estrella{ color:var(--oro); font-size:1.2rem; display:block; margin
   <a href="#nosotros">Nosotros</a>
   <a href="#servicios">Servicios</a>
   <a href="#calendario">Agenda</a>
+  <a href="#noticias">Noticias</a>
   <a href="#contacto">Contacto</a>
 </nav>
 
@@ -581,10 +582,10 @@ footer .foot-estrella{ color:var(--oro); font-size:1.2rem; display:block; margin
   </div>
   <div class="cal-grid" id="cal-grid"></div>
   <div class="leyenda">
-    <span><span class="muestra-ocupado"></span> Día ocupado · evento Raíces del Rodeo</span>
-    <span><span class="muestra-punto"></span> Cita agendada por un cliente</span>
+    <span><span class="muestra-ocupado"></span> Evento registrado · Raíces del Rodeo</span>
+    <span><span class="muestra-punto"></span> Evento en el calendario</span>
   </div>
-  <p class="aviso">Haz clic en un día para agendar o ver el detalle. Los días rayados corresponden al calendario oficial de servicios.</p>
+  <p class="aviso">Haz clic en un día para agendar o ver el detalle. Los días marcados muestran eventos registrados. Consulta los horarios disponibles al seleccionar una fecha.</p>
 
   <div class="citas-hoy" id="panel-cita" style="display:none;">
     <h3 id="titulo-cita-dia" style="color:var(--marron); font-family:'Playfair Display', Georgia, serif; font-weight:700; margin-bottom:14px;"></h3>
@@ -633,6 +634,8 @@ footer .foot-estrella{ color:var(--oro); font-size:1.2rem; display:block; margin
   </div>
 </section>
 
+<section id="eventos" class="revelar"><span class="kicker">Calendario oficial</span><h2>Próximos eventos</h2><div id="eventos-dinamicos" class="servicios-grid" aria-live="polite">Cargando eventos…</div></section>
+<section id="noticias" class="revelar"><span class="kicker">Actualidad</span><h2>Noticias</h2><div id="noticias-dinamicas" class="servicios-grid" aria-live="polite">Cargando noticias…</div></section>
 <!-- CONTACTO -->
 <section id="contacto" class="revelar centrado">
   <span class="kicker">Hablemos</span>
@@ -644,13 +647,21 @@ footer .foot-estrella{ color:var(--oro); font-size:1.2rem; display:block; margin
     <p><strong>✉️ Correo:</strong> <a href="mailto:raicesdelrodeo@gmail.com">raicesdelrodeo@gmail.com</a></p>
     <p style="margin-top:14px; font-size:.9rem;">📅 También puedes agendar directamente en la sección <a href="#calendario">Agenda</a>.</p>
   </div>
+  <form id="form-contacto" class="tarjeta-info" style="margin:24px auto;text-align:left;max-width:680px">
+    <h3>Envíanos un mensaje</h3>
+    <label for="contacto-nombre">Nombre</label><input id="contacto-nombre" name="nombre" required maxlength="150">
+    <label for="contacto-correo">Correo</label><input id="contacto-correo" name="correo" type="email" required maxlength="200">
+    <label for="contacto-telefono">Teléfono (opcional)</label><input id="contacto-telefono" name="telefono" type="tel" maxlength="40">
+    <label for="contacto-mensaje">Mensaje</label><textarea id="contacto-mensaje" name="mensaje" required maxlength="3000" rows="5" style="width:100%;padding:12px;font:inherit"></textarea>
+    <button type="submit">Enviar mensaje</button><p id="estado-contacto" role="status"></p>
+  </form>
 </section>
 
 <footer>
   <span class="foot-estrella">★</span>
   <strong style="color:var(--oro-claro);">Raíces del Rodeo</strong><br>
   <em>Transmitiendo y difundiendo las tradiciones del campo chileno.</em><br>
-  <span style="opacity:.6; font-size:.8rem;">Tu información se guarda solo en tu navegador</span>
+  <span style="opacity:.6; font-size:.8rem;">Los datos enviados se utilizan para gestionar tus solicitudes y consultas.</span>
 </footer>
 
 <div id="toasts"></div>
@@ -678,48 +689,7 @@ let diaSeleccionado = null;
 function keyFecha(y,m,d){ return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; }
 
 // ---------- Calendario oficial de servicios (días ocupados) ----------
-const EVENTOS_FIJOS = {
-  '2026-11-07': [
-    { titulo:'Club de Huasos Yerbas Buenas', detalle:'Servicio integral · Secretario de rodeo: Carlos Muñoz' },
-    { titulo:'Rodeo Club Rinconada de Doñihue', detalle:'Asociación Cachapoal · Secretario de rodeo: Juan Francisco Contreras' }
-  ],
-  '2026-11-08': [
-    { titulo:'Club de Huasos Yerbas Buenas', detalle:'Servicio integral · Secretario de rodeo: Carlos Muñoz' },
-    { titulo:'Rodeo Club Rinconada de Doñihue', detalle:'Asociación Cachapoal · Secretario de rodeo: Juan Francisco Contreras' }
-  ],
-  '2026-11-14': [
-    { titulo:'Club de Huasos El Cisne', detalle:'Asociación Valle de Teno · Servicio integral' }
-  ],
-  '2026-11-15': [
-    { titulo:'Club de Huasos El Cisne', detalle:'Asociación Valle de Teno · Servicio integral' }
-  ],
-  '2026-11-21': [
-    { titulo:'Club de Huasos La Cruz', detalle:'Asociación San Francisco · Servicio integral · Secretario: Juan Francisco Contreras' },
-    { titulo:'Rodeo Club Tierra Fértil', detalle:'Asociación Cachapoal · Secretario de rodeo: Carlos Muñoz' }
-  ],
-  '2026-11-22': [
-    { titulo:'Club de Huasos La Cruz', detalle:'Asociación San Francisco · Servicio integral · Secretario: Juan Francisco Contreras' },
-    { titulo:'Rodeo Club Tierra Fértil', detalle:'Asociación Cachapoal · Secretario de rodeo: Carlos Muñoz' }
-  ],
-  '2026-11-28': [
-    { titulo:'Rodeo Club de Huasos Jaime Broughton', detalle:'Asociación Valle de Teno · Servicio integral' }
-  ],
-  '2026-11-29': [
-    { titulo:'Rodeo Club de Huasos Jaime Broughton', detalle:'Asociación Valle de Teno · Servicio integral' }
-  ],
-  '2026-12-05': [
-    { titulo:'Rodeo Club El Esmeralda', detalle:'Asociación Cachapoal · Secretario de rodeo: Carlos Muñoz' }
-  ],
-  '2026-12-06': [
-    { titulo:'Rodeo Club El Esmeralda', detalle:'Asociación Cachapoal · Secretario de rodeo: Carlos Muñoz' }
-  ],
-  '2026-12-19': [
-    { titulo:'Club Renacer de Olivar', detalle:'Asociación Cachapoal · Secretario de rodeo: Carlos Muñoz' }
-  ],
-  '2026-12-20': [
-    { titulo:'Club Renacer de Olivar', detalle:'Asociación Cachapoal · Secretario de rodeo: Carlos Muñoz' }
-  ]
-};
+const EVENTOS_FIJOS = {};
 
 function renderCalendario(){
   const y = fechaBase.getFullYear(), m = fechaBase.getMonth();
@@ -805,7 +775,7 @@ const observer = new IntersectionObserver((entries) => {
 document.querySelectorAll('.revelar').forEach(el => observer.observe(el));
 
 // Resaltar enlace activo del menú según sección visible
-const secciones = ['inicio','nosotros','servicios','calendario','contacto'];
+const secciones = ['inicio','nosotros','servicios','calendario','eventos','noticias','contacto'];
 const navObserver = new IntersectionObserver((entries) => {
   entries.forEach(e => {
     if(e.isIntersecting){
@@ -818,6 +788,38 @@ secciones.forEach(id => { const el = document.getElementById(id); if(el) navObse
 
 // ===================== INICIALIZAR =====================
 renderCalendario();
+async function cargarContenido(accion, id){
+  const cont = document.getElementById(id);
+  try {
+    const r = await fetch(API+'?accion='+accion,{cache:'no-store'});
+    const datos = await r.json();
+    if(!Array.isArray(datos)) throw Error('Respuesta inválida');
+    const hoy = new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Santiago'}).format(new Date());
+    cont.textContent='';
+    for(const item of datos){
+      if(accion==='agenda'){
+        if(!/^\d{4}-\d{2}-\d{2}$/.test(item.fecha)) continue;
+        (EVENTOS_FIJOS[item.fecha] ||= []).push({titulo:item.titulo,detalle:[item.hora,item.lugar,item.descripcion].filter(Boolean).join(' · ')});
+        if(item.fecha<hoy) continue;
+      }
+      const card=document.createElement('article'); card.className='servicio';
+      if(item.imagen){try{const u=new URL(item.imagen);if(u.protocol==='https:'){const img=document.createElement('img');img.src=u.href;img.alt=item.titulo;img.loading='lazy';img.style.cssText='width:100%;max-height:240px;object-fit:cover;border-radius:8px';card.append(img);}}catch(e){}}
+      const h=document.createElement('h3');h.textContent=item.titulo;card.append(h);
+      const p=document.createElement('p');p.textContent=[item.fecha,item.hora,item.lugar].filter(Boolean).join(' · ');card.append(p);
+      if(accion==='noticias'){const d=document.createElement('details');const t=document.createElement('summary');t.textContent='Leer noticia';const body=document.createElement('p');body.textContent=item.contenido;d.append(t,body);card.append(d);}else{const body=document.createElement('p');body.textContent=item.descripcion;card.append(body);}
+      cont.append(card);
+    }
+    if(!cont.children.length)cont.textContent=accion==='agenda'?'No hay próximos eventos publicados.':'No hay noticias publicadas.';
+    if(accion==='agenda'){renderCalendario();if(diaSeleccionado)renderCitas();}
+  }catch(e){cont.textContent='No se pudo cargar el contenido. Recarga la página para reintentar.';}
+}
+cargarContenido('agenda','eventos-dinamicos');
+cargarContenido('noticias','noticias-dinamicas');
+document.getElementById('form-contacto').addEventListener('submit',async function(e){
+  e.preventDefault();const boton=this.querySelector('button');if(boton.disabled)return;
+  const estado=document.getElementById('estado-contacto');boton.disabled=true;estado.textContent='Enviando…';
+  try{const datos=Object.fromEntries(new FormData(this));const r=await fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:JSON.stringify({...datos,accion:'contacto'})});const res=await r.json();if(!res.ok)throw Error(res.mensaje||'No se pudo enviar');this.reset();estado.textContent='Mensaje recibido correctamente.';}catch(e){estado.textContent='No se pudo confirmar el envío. Intenta nuevamente más tarde.';}finally{boton.disabled=false;}
+});
 </script>
 </body>
 </html>
